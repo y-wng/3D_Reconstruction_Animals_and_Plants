@@ -6,8 +6,20 @@ import os
 import re
 
 # 下载 ImageNet 的类别标签
-LABELS_URL = "https://raw.githubusercontent.com/pytorch/hub/master/imagenet_classes.txt"
-labels = requests.get(LABELS_URL).text.splitlines()
+# LABELS_URL = "https://raw.githubusercontent.com/pytorch/hub/master/imagenet_classes.txt"
+# labels = requests.get(LABELS_URL).text.splitlines()
+
+
+def read_labels():
+    labels = []
+    file_path = './image1k.txt'
+    with open(file_path, 'r', encoding='utf-8') as file:
+        content = file.read()
+        labels.extend(content.splitlines())
+    return labels
+
+
+labels = read_labels()
 
 # 加载预训练模型
 model = models.efficientnet_b7(pretrained=True)
