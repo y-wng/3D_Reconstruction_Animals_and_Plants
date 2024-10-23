@@ -12,7 +12,7 @@ import json
 import time
 
 # load labels extracted from annotations to find at https://github.com/visipedia/inat_comp/tree/master/2021
-with open('./categories_inat2021.json') as f:
+with open('./pa_classifier/categories_inat2021.json') as f:
     categories = json.load(f)
 
 model = None
@@ -23,7 +23,7 @@ def load_model():
     global model
     # TODO: Download pre-trained models from https://github.com/EibSReM/newt/tree/main/benchmark
     # TODO: adapt path to respective model
-    model_weights_fp = 'cvpr21_newt_pretrained_models\pt\inat2021_supervised_large_from_scratch.pth.tar'
+    model_weights_fp = 'pa_classifier\cvpr21_newt_pretrained_models\pt\inat2021_supervised_large_from_scratch.pth.tar'
     model = models.resnet50(pretrained=False)
     model.fc = torch.nn.Linear(model.fc.in_features, 10000)
     checkpoint = torch.load(model_weights_fp, map_location="cpu")

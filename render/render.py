@@ -1,13 +1,13 @@
 from numpy.linalg import norm
+import shutil
 import bpy
 import bpy.ops as ops
 import sys
-from math import pi,sin,cos,tan
+from math import pi,sin,cos,tan,sqrt
 import os
 import io
 from contextlib import contextmanager
-#from multiprocessing import Pool
-#from functools import partial
+
 
 class Render():
     def __init__(self, model_dir, save_dir, angle_list=[(pi/4.,pi/6),
@@ -25,7 +25,7 @@ class Render():
         self.stdout = io.StringIO()
         self.Objects = bpy.data.objects
         self.Scene = bpy.data.scenes["Scene"]
-        bpy.data.worlds['World'].node_tree.nodes['Background'].inputs[0].default_value=[1,1,1,1]
+        bpy.data.worlds['World'].node_tree.nodes['Background'].inputs[0].default_value=[0.7,0.7,0.7,1]
         self.Engines=['BLENDER_WORKBENCH' ,'BLENDER_EEVEE', 'CYCLES']
         self.Scene.view_layers["ViewLayer"].use_pass_z = True
         self.presetCompositor()
@@ -63,11 +63,12 @@ class Render():
         """
         Deletes all objects in the current scene
         
-        deleteListObjects = ['MESH', 'CURVE', 'SURFACE', 'META', 'FONT', 'HAIR', 'POINTCLOUD', 'VOLUME', 'GPENCIL',
-                            'ARMATURE', 'LATTICE', 'EMPTY', 'LIGHT', 'LIGHT_PROBE', 'CAMERA', 'SPEAKER']
+        
         """
         deleteListObjects = ['MESH', 'CURVE', 'SURFACE', 'META', 'FONT', 'HAIR', 'POINTCLOUD', 'VOLUME', 'GPENCIL',
-                            'ARMATURE', 'LATTICE', 'EMPTY',  'CAMERA', 'SPEAKER']
+                            'ARMATURE', 'LATTICE', 'EMPTY', 'LIGHT', 'LIGHT_PROBE', 'CAMERA', 'SPEAKER']
+        # deleteListObjects = ['MESH', 'CURVE', 'SURFACE', 'META', 'FONT', 'HAIR', 'POINTCLOUD', 'VOLUME', 'GPENCIL',
+        #                     'ARMATURE', 'LATTICE', 'EMPTY',  'CAMERA', 'SPEAKER']
         
         # Select all objects in the scene to be deleted:
 
@@ -76,13 +77,7 @@ class Render():
                 o.select_set(True)
         bpy.ops.object.delete() # Deletes all selected objects in the scene
 
-    def auto_dist(self, target):
-        xs=[ p[0] for p in target.bound_box]
-        ys=[ p[1] for p in target.bound_box]
-        zs=[ p[2] for p in target.bound_box]
-        longest=norm([max(xs)-min(xs),max(ys)-min(ys),max(zs)-min(zs)])
-        dist=longest/2/tan(self.viewAngle/2)/cos(self.viewAngle/2)
-        return dist
+    
     
     def setCameraAngle(self, target=None, phi=0, theta=0):
         '''
@@ -115,15 +110,7 @@ class Render():
         input_node = tree.nodes.new(type='CompositorNodeRLayers')
         input_node.location = 0,0
 
-        # create output node
-        #convert_space=tree.nodes.new('CompositorNodeConvertColorSpace')
-        #convert_space.from_color_space='sRGB'
-        #convert_space.to_color_space='Linear'
-        #convert_space.name='convert_space'
-        
-        #multi_ply3=tree.nodes.new('CompositorNodeMath')
-        #multi_ply3.operation='MULTIPLY'
-        #multi_ply3.name='multiply3'
+
         
         comp_node = tree.nodes.new('CompositorNodeComposite') 
         comp_node.name=  'CompositorNodeComposite'
@@ -242,38 +229,82 @@ class Render():
             
         fileID=os.path.split(filepath)[1].split('.')[0]
         ops.object.select_all(action='DESELECT')
+        
         countMesh=0
         for o in self.Objects:
             if o.type=='MESH':
-                countMesh+=1
+                
                 o.select_set(True)
-                bpy.context.view_layer.objects.active=o
+                if countMesh==0:
+                    bpy.context.view_layer.objects.active=o
+                countMesh+=1
+        # print(countMesh)
         if countMesh>1:
             ops.object.join()
-        ops.object.origin_set(type='GEOMETRY_ORIGIN')
-        ops.object.select_all(action='DESELECT')
-        
+            
         target=None
+        
         for o in self.Objects:
             if o.type=='MESH':
                 target=o
                 break
-        ops.object.camera_add(location=[self.auto_dist(target),0,0],rotation=[0.5*pi,0,0.5*pi])
+        
+            
+        ##隐藏动画信息
+        ops.object.select_all(action='DESELECT')
+        for o in self.Objects:
+            if o.type=='ARMATURE' :
+                o.hide_render=True
+            elif o.name=='Camera':
+                o.select_set(True)
+        bpy.ops.object.delete()
+        
+        for modifier in target.modifiers:
+            if modifier.type=="ARMATURE":
+                bpy.context.view_layer.objects.active=target
+                ops.object.modifier_apply(modifier=modifier.name)
+                break
+        ops.object.select_all(action='DESELECT')
+        
+        target.select_set(True)
+        ops.object.origin_set(type='ORIGIN_CURSOR')
+        ops.object.origin_set(type='GEOMETRY_ORIGIN',center='BOUNDS')
         
         
         
-        #settings
-        ##Format
-        self.Scene.render.resolution_x = 256            
-        self.Scene.render.resolution_y = 256
+        ops.object.select_all(action='SELECT')
+        ops.object.transform_apply(location=False,rotation=False,scale=True)
+        ops.object.select_all(action='DESELECT')
+        
+        
+        ##缩放模型
+        
+        diag=norm([target.dimensions.x,target.dimensions.y,target.dimensions.z])
+        longest=max([target.dimensions.x,target.dimensions.y,target.dimensions.z])
+        # print(target.dimensions.x)
+        # print(target.dimensions.y)
+        # print(target.dimensions.z)
+        target.scale[0],target.scale[1],target.scale[2]=10/longest,10/longest,10/longest
+        ops.object.transform_apply(location=True,rotation=True,scale=True)
+        
+        diag*=10/longest
+        
+        dist=diag/2/tan(self.viewAngle/2)/cos(self.viewAngle/2)
+        # fileID=fileID+'__'+str(format(dist, '.4f'))
+        
+        ops.object.select_all(action='DESELECT')
+
+        
+        
+        
+
+        ##摄像机设置
+        ops.object.camera_add(location=[dist,0,0],rotation=[0.5*pi,0,0.5*pi])
+        bpy.data.cameras['Camera'].angle=self.viewAngle
+        ops.object.select_all(action='DESELECT')
         self.Scene.camera = self.Objects['Camera'] 
-        self.Scene.render.image_settings.file_format = 'PNG'
-        self.Scene.render.image_settings.compression = 0
-        self.Scene.render.image_settings.color_management='OVERRIDE'
         
         
-        ##render format
-        self.Scene.render.engine = self.Engines[1]#Use EEVEE
         
         
         
@@ -342,35 +373,70 @@ class Render():
                     bpy.ops.render.render( write_still=True )
                 
     def renderAll(self, multiprocess=False):
+        
+        #settings
+        self.Scene.render.resolution_x = 256            
+        self.Scene.render.resolution_y = 256
+        
+        self.Scene.render.image_settings.file_format = 'PNG'
+        self.Scene.render.image_settings.compression = 15
+        self.Scene.render.image_settings.color_management='OVERRIDE'
+        
+        
+        ##渲染引擎
+        self.Scene.render.engine = self.Engines[1]#实时渲染引擎
+        
+        # self.Scene.render.engine = self.Engines[2]#光线追踪引擎
+        self.Scene.cycles.device = 'GPU'
+        self.Scene.cycles.samples = 512# 降低采样数可提升性能，但不要低于128
+        bpy.context.preferences.addons[
+        "cycles"
+        ].preferences.compute_device_type = "CUDA" # or "OPENCL"
+
+        if not os.path.exists('render_log/current_id.txt'):
+            current_id = 5
+        else:
+            # 打开文件以读取模式
+            with open('render_log/current_id.txt', 'r') as file:
+                # 读取文件内容并转换为整数
+                current_id = int(file.read())
+
         glb_names=[name for name in os.listdir(self.model_dir) if name.endswith('.glb')]
-        if len(glb_names)==0:
+        print(len(glb_names) - current_id,'models found totally.')
+        if len(glb_names) - current_id==0:
             raise Exception('No \'.glb\' file is found')
         if not multiprocess:
-            num_names=len(glb_names)
-            for Index in range(num_names):
-                self.list_render(anglelist=self.angle_list,
-                        filepath=os.path.join(self.model_dir,glb_names[Index]),
-                        savedir=self.save_dir)
-                print(Index+1,'/',num_names,'  name :',glb_names[Index])
-        # if multiprocess:
-        #     glb_paths=[os.path.join(model_dir,name) for name in glb_names]
-        #     with Pool(1) as p:
-        #         data_infos=p.map(partial(
-        #                             partial(list_render,angle_list)
-        #                             ,save_dir
-        #                             )
-        #                         ,glb_paths
-        #                         )
-        #         p.close()
-        #         p.join()
+            num_names=len(glb_names) - current_id
+            for Index in range(num_names - current_id):
+                try:
+                    self.list_render(anglelist=self.angle_list,
+                            filepath=os.path.join(self.model_dir,glb_names[Index + current_id]),
+                            savedir=self.save_dir)
+                    print(Index+1,'/',num_names,'  name :',glb_names[Index + current_id])
+                except KeyboardInterrupt:
+                    with open('render_log/current_id.txt', 'w') as file:
+                        # 将整数转换为字符串并写入文件
+                        file.write(str(Index + current_id) + '\n')
+                    current_name = glb_names[Index + current_id].split('.')[0]
+                    dir_tobe_deleted = os.path.join(self.save_dir, current_name)
+                    if os.path.exists(dir_tobe_deleted):
+                        shutil.rmtree(dir_tobe_deleted)
+                    exit()
+                except:
+                    # 打开文件以写入模式
+                    with open('render_log/excepts.txt', 'a') as file:
+                        # 将整数转换为字符串并写入文件
+                        file.write(str(Index + current_id) + '\n')
+                    continue
+                
                 
 
     
 
 
 if __name__=='__main__':
-    render = Render(model_dir='/home/wangyi/ROOT/study_stuffs/Machine_Learning_Project/modules/Data-Collection-3D-model/glb_data', 
-                  save_dir='/home/wangyi/ROOT/study_stuffs/Machine_Learning_Project/modules/Data-Collection-3D-model/rendered_data', 
+    render = Render(model_dir='D:/My Codes/Python3/BlenderPY/testmodel/test', 
+                  save_dir='D:/My Codes/Python3/BlenderPY/dogresults', 
                   angle_list=[(pi/4.,pi/6),
                         (3*pi/4.,pi/6),
                         (5*pi/4.,pi/6),
@@ -380,3 +446,4 @@ if __name__=='__main__':
                         (5*pi/4.,0),
                         (7*pi/4.,0),], viewAngle=0.691112)
     render.renderAll()
+##394行可以更换渲染模式，若一种过慢就换

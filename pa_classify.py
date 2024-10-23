@@ -1,6 +1,7 @@
 from pa_classifier import judge
 from pa_classifier import classifier
 import os
+from utils.filtrate import check_and_move_folders
 
 use_translate = False
 
@@ -36,3 +37,4 @@ if __name__ == '__main__':
     for item in os.scandir(base_path):
         if item.is_dir():
             main(topk, item.path)
+    check_and_move_folders(base_path)
