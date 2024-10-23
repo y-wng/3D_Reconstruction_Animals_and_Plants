@@ -2,3 +2,4 @@
 *.glb
 *.png
 *.txt
+!.gitkeep
