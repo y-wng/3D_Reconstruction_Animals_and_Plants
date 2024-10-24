@@ -6,6 +6,7 @@ import sys
 from math import pi,sin,cos,tan,sqrt
 import os
 import io
+import torch
 from contextlib import contextmanager
 
 
@@ -387,17 +388,18 @@ class Render():
         self.Scene.render.engine = self.Engines[1]#实时渲染引擎
         
         # self.Scene.render.engine = self.Engines[2]#光线追踪引擎
+        
         self.Scene.cycles.device = 'GPU'
         self.Scene.cycles.samples = 512# 降低采样数可提升性能，但不要低于128
         bpy.context.preferences.addons[
         "cycles"
         ].preferences.compute_device_type = "CUDA" # or "OPENCL"
 
-        if not os.path.exists('render_log/current_id.txt'):
-            current_id = 5
+        if not os.path.exists('log/render_log/current_id.txt'):
+            current_id = 0
         else:
             # 打开文件以读取模式
-            with open('render_log/current_id.txt', 'r') as file:
+            with open('log/render_log/current_id.txt', 'r') as file:
                 # 读取文件内容并转换为整数
                 current_id = int(file.read())
 
@@ -414,7 +416,7 @@ class Render():
                             savedir=self.save_dir)
                     print(Index+1,'/',num_names,'  name :',glb_names[Index + current_id])
                 except KeyboardInterrupt:
-                    with open('render_log/current_id.txt', 'w') as file:
+                    with open('log/render_log/current_id.txt', 'w') as file:
                         # 将整数转换为字符串并写入文件
                         file.write(str(Index + current_id) + '\n')
                     current_name = glb_names[Index + current_id].split('.')[0]
@@ -424,26 +426,9 @@ class Render():
                     exit()
                 except:
                     # 打开文件以写入模式
-                    with open('render_log/excepts.txt', 'a') as file:
+                    with open('log/render_log/excepts.txt', 'a') as file:
                         # 将整数转换为字符串并写入文件
                         file.write(str(Index + current_id) + '\n')
                     continue
                 
                 
-
-    
-
-
-if __name__=='__main__':
-    render = Render(model_dir='D:/My Codes/Python3/BlenderPY/testmodel/test', 
-                  save_dir='D:/My Codes/Python3/BlenderPY/dogresults', 
-                  angle_list=[(pi/4.,pi/6),
-                        (3*pi/4.,pi/6),
-                        (5*pi/4.,pi/6),
-                        (7*pi/4.,pi/6),
-                        (pi/4.,0),
-                        (3*pi/4.,0),
-                        (5*pi/4.,0),
-                        (7*pi/4.,0),], viewAngle=0.691112)
-    render.renderAll()
-##394行可以更换渲染模式，若一种过慢就换

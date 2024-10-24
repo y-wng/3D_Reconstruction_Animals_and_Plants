@@ -1,5 +1,5 @@
 # Tutorial
-将下载好的`*.glb`文件存入文件夹`/glb_data`，运行`render_all.py`会将所有渲染结果存入文件夹`/rendered_data`，再运行`pa_classify.py`(需先下载预训练模型)即可以将分类结果存入对应被分类图片所在文件夹下的`output.txt`中。有关爬虫、渲染器、分类器三部分的介绍依次如下。
+将下载好的`*.glb`文件存入文件夹`/glb_data`，依次运行`render_all.py`,`glb2obj.py`,`pa_classifier.py`(需下载预训练模型)，即可将结果全部存入`./wangyi_522030910147`内。其中前两个脚本运行过程中自动保存处理进度，如一次性处理不完可以从终端打断。
 
 # Tutorial : Scrapy
 

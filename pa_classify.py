@@ -33,7 +33,7 @@ def main(k, path):
 
 if __name__ == '__main__':
     topk = 5
-    base_path = './rendered_data'
+    base_path = './wangyi_522030910147/rendered_data'
     for item in os.scandir(base_path):
         if item.is_dir():
             main(topk, item.path)

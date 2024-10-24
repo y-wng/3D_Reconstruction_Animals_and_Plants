@@ -12,14 +12,14 @@ def check_and_move_folders(root_folder):
                 
                 if "likely not a plant or animal" in content:
                     f.close()
-                    shutil.rmtree(folder_path)
-                    os.remove('./glb_data/'+folder_name+'.glb')
-                    os.remove('./glb_data/'+folder_name+'.txt')
+                    # shutil.rmtree('./wangyi_522030910147/filtrated_data/'+folder_name)
+                    # shutil.rmtree('./wangyi_522030910147/rendered_data/'+folder_name)
+                    with open('./log/filtrate_log/not_pa.txt', 'a') as f_1:
+                        f_1.write(folder_name+'\n')
                 else:
                     species = extract_species(content)  # 提取species
                     f.close()
-                    move_folder(folder_path, species)  # 移动文件夹
-                    move_glb(folder_name, species)  # 移动文件夹
+                    move_folder(folder_name, species)  # 移动文件夹
 
 
 def extract_species(content):
@@ -30,18 +30,14 @@ def extract_species(content):
             return line.split("species:")[-1].strip().split(',')[0]  # 获取species
     return None
 
-def move_folder(folder_path, species):
-    target_folder = os.path.join(os.path.dirname(folder_path), species.lower() + 's')
-    os.makedirs(target_folder, exist_ok=True)  # 创建目标文件夹
-    shutil.move(folder_path, target_folder)  # 移动文件夹
+def move_folder(folder_name, species):
+    target_folder_1 = os.path.join('./wangyi_522030910147/filtrated_data', species.lower() + 's')
+    os.makedirs(target_folder_1, exist_ok=True)  # 创建目标文件夹
+    shutil.move('./wangyi_522030910147/filtrated_data/'+folder_name, target_folder_1)  # 移动文件夹
+    target_folder_1 = os.path.join('./wangyi_522030910147/rendered_data', species.lower() + 's')
+    os.makedirs(target_folder_1, exist_ok=True)  # 创建目标文件夹
+    shutil.move('./wangyi_522030910147/rendered_data/'+folder_name, target_folder_1)  # 移动文件夹
 
-def move_glb(folder_name, species):
-    target_folder = os.path.join('./glb_data', species.lower() + 's')
-    os.makedirs(target_folder, exist_ok=True)  # 创建目标文件夹
-    file_path=os.path.join('./glb_data',folder_name+'.glb')
-    file2_path=os.path.join('./glb_data',folder_name+'.txt')
-    shutil.move(file_path, target_folder)  
-    shutil.move(file2_path, target_folder)
 # # 使用示例
 # root_folder = './rendered_data'
 # check_and_move_folders(root_folder)
