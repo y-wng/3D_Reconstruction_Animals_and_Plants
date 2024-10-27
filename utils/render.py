@@ -16,7 +16,7 @@ class Render():
                         (pi/4.,0),
                         (3*pi/4.,0),
                         (5*pi/4.,0),
-                        (7*pi/4.,0),],gpu_in_use=False, cam_lens=35,cam_sensor_width=32):
+                        (7*pi/4.,0),], gpu_in_use=False, cam_lens=35,cam_sensor_width=32):
         self.gpu_in_use = gpu_in_use
         self.model_dir = model_dir
         self.save_dir = save_dir
@@ -70,12 +70,15 @@ class Render():
                             'ARMATURE', 'LATTICE', 'EMPTY', 'LIGHT', 'LIGHT_PROBE', 'CAMERA', 'SPEAKER']
         # deleteListObjects = ['MESH', 'CURVE', 'SURFACE', 'META', 'FONT', 'HAIR', 'POINTCLOUD', 'VOLUME', 'GPENCIL',
         #                     'ARMATURE', 'LATTICE', 'EMPTY',  'CAMERA', 'SPEAKER']
-        
+        # 
         # Select all objects in the scene to be deleted:
 
+        bpy.ops.object.mode_set(mode="OBJECT")
+        
         for o in self.Objects:
             if o.type in deleteListObjects:
                 o.select_set(True)
+
         bpy.ops.object.delete() # Deletes all selected objects in the scene
 
     
@@ -227,6 +230,7 @@ class Render():
         
         with self.stdout_redirected():
             ops.import_scene.gltf(filepath=filepath)
+
             
         fileID=os.path.split(filepath)[1].split('.')[0]
         ops.object.select_all(action='DESELECT')
@@ -249,7 +253,9 @@ class Render():
             if o.type=='MESH':
                 target=o
                 break
-        
+            
+        if target is None:
+            raise Exception("No target")
             
         ##隐藏动画信息
         ops.object.select_all(action='DESELECT')
@@ -381,6 +387,8 @@ class Render():
         
         ##渲染引擎
         self.Scene.render.engine = self.Engines[1]#实时渲染引擎
+
+
         
         # self.Scene.render.engine = self.Engines[2]#光线追踪引擎
 
@@ -422,7 +430,7 @@ class Render():
                         import shutil
                         shutil.rmtree(dir_tobe_deleted)
                     exit()
-                except Exception as e:
+                except:
                     # 打开文件以写入模式
                     with open('log/render_log/excepts.txt', 'a') as file:
                         # 将整数转换为字符串并写入文件
@@ -430,22 +438,7 @@ class Render():
                     continue
                 
                 
-
-    
-
-
-if __name__=='__main__':
-    render = Render(model_dir='D:/My Codes/Python3/BlenderPY/testmodel/test', 
-                  save_dir='D:/My Codes/Python3/BlenderPY/dogresults', 
-                  angle_list=[(-pi/3,pi/3),
-                        (pi/6,pi/3),
-                        (2*pi/3,pi/3),
-                        (7*pi/6,pi/3),
-                        (-pi/6,pi/2),
-                        (pi/3,pi/2),
-                        (5*pi/6,pi/2),
-                        (4*pi/3,pi/2),], cam_lens=35,cam_sensor_width=32)
-    render.renderAll()
+                
 ##394行可以更换渲染模式，若一种过慢就换
 
 # name: view_0 distance= 1.2000000307119145       theta= 60.00000281832396        phi 300.00000141476715

@@ -5,7 +5,7 @@ import json
 
 def parse_txt_file(file_path):
     print(f"processing: {file_path}")
-    with open(file_path, "r", encoding="utf-8") as file:
+    with open(file_path, "r", encoding="utf-8", errors='ignore') as file:
         content = file.read()
 
     tags = []
@@ -29,7 +29,9 @@ def parse_txt_file(file_path):
             break
 
     if not tags or not download_link:
-        print(f"Error: Missing [tags] or [download_link] in file {file_path}, skipped")
+        print(f"Warn: Missing [tags] or [download_link] in file {file_path}, deleted")
+        file_name = file_path.split('.t')[0] + '.glb'
+        os.remove(file_name)
         return None, None
 
     return file_path.split("/")[-1][:-4], {
@@ -64,5 +66,5 @@ if __name__ == "__main__":
     dir_name = os.path.dirname(os.path.abspath(__file__))
 
     renderer = Render(model_dir=dir_name + '/glb_data', save_dir=dir_name + '/wangyi_522030910147/rendered_data'
-                      ,gpu_in_use=True)
+                      ,gpu_in_use=False)
     renderer.renderAll()
