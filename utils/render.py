@@ -1,12 +1,10 @@
 from numpy.linalg import norm
-import shutil
 import bpy
 import bpy.ops as ops
 import sys
 from math import pi,sin,cos,tan,sqrt
 import os
 import io
-import torch
 from contextlib import contextmanager
 
 
@@ -18,11 +16,13 @@ class Render():
                         (pi/4.,0),
                         (3*pi/4.,0),
                         (5*pi/4.,0),
-                        (7*pi/4.,0),], viewAngle=0.691112):
+                        (7*pi/4.,0),],gpu_in_use=False, cam_lens=35,cam_sensor_width=32):
+        self.gpu_in_use = gpu_in_use
         self.model_dir = model_dir
         self.save_dir = save_dir
         self.angle_list = angle_list
-        self.viewAngle = viewAngle # uesd in method 'auto_dist'
+        self.cam_lens = cam_lens # uesd in method 'auto_dist'
+        self.cam_sensor_width = cam_sensor_width
         self.stdout = io.StringIO()
         self.Objects = bpy.data.objects
         self.Scene = bpy.data.scenes["Scene"]
@@ -96,8 +96,8 @@ class Render():
         if camera is None:
             raise ValueError('No camera')
         dist=norm([camera.location,[0,0,0]])
-        camera.location=[dist*cos(theta)*cos(phi),dist*cos(theta)*sin(phi),dist*sin(theta)]
-        camera.rotation_euler=[0.5*pi-theta,0,0.5*pi+phi]
+        camera.location=[dist*sin(theta)*cos(phi),dist*sin(theta)*sin(phi),dist*cos(theta)]
+        camera.rotation_euler=[theta,0,0.5*pi+phi]
 
     def presetCompositor(self, ):
 
@@ -277,39 +277,34 @@ class Render():
         ops.object.transform_apply(location=False,rotation=False,scale=True)
         ops.object.select_all(action='DESELECT')
         
-        
-        ##缩放模型
-        
-        diag=norm([target.dimensions.x,target.dimensions.y,target.dimensions.z])
-        longest=max([target.dimensions.x,target.dimensions.y,target.dimensions.z])
-        # print(target.dimensions.x)
-        # print(target.dimensions.y)
-        # print(target.dimensions.z)
-        target.scale[0],target.scale[1],target.scale[2]=10/longest,10/longest,10/longest
-        ops.object.transform_apply(location=True,rotation=True,scale=True)
-        
-        diag*=10/longest
-        
-        dist=diag/2/tan(self.viewAngle/2)/cos(self.viewAngle/2)
-        # fileID=fileID+'__'+str(format(dist, '.4f'))
-        
-        ops.object.select_all(action='DESELECT')
-
-        
-        
-        
-
         ##摄像机设置
-        ops.object.camera_add(location=[dist,0,0],rotation=[0.5*pi,0,0.5*pi])
-        bpy.data.cameras['Camera'].angle=self.viewAngle
+        cam_dist=1.2#摄像机距离
+        ops.object.camera_add(location=[cam_dist,0,0],rotation=[0.5*pi,0,0.5*pi])
+        
+        
+        bpy.data.cameras['Camera'].lens=self.cam_lens
+        bpy.data.cameras['Camera'].sensor_width=self.cam_sensor_width
+        
         ops.object.select_all(action='DESELECT')
         self.Scene.camera = self.Objects['Camera'] 
         
         
+        ##缩放模型
+        
+        ViewAngle=bpy.data.cameras['Camera'].angle
+        
+        diag=norm([target.dimensions.x,target.dimensions.y,target.dimensions.z])
+        longest=max([target.dimensions.x,target.dimensions.y,target.dimensions.z])
+        
+        Side_length=cam_dist*tan(ViewAngle/2)*2/1.73205080756887
+        
+        target.scale[0],target.scale[1],target.scale[2]=Side_length/longest,Side_length/longest,Side_length/longest
+        ops.object.transform_apply(location=True,rotation=True,scale=True)
         
         
-        
+        ops.object.select_all(action='DESELECT')
 
+        
         
         anglelen=len(anglelist)
         for i in range(anglelen):
@@ -345,10 +340,10 @@ class Render():
             
             
             sublist=[
-                (phi,theta+pi/18),
                 (phi,theta-pi/18),
-                (phi+pi/18,theta),
+                (phi,theta+pi/18),
                 (phi-pi/18,theta),
+                (phi+pi/18,theta),
             ]
             for j in range(4):
                 Phi=sublist[j][0]
@@ -388,13 +383,15 @@ class Render():
         self.Scene.render.engine = self.Engines[1]#实时渲染引擎
         
         # self.Scene.render.engine = self.Engines[2]#光线追踪引擎
-        
-        self.Scene.cycles.device = 'GPU'
-        self.Scene.cycles.samples = 512# 降低采样数可提升性能，但不要低于128
-        bpy.context.preferences.addons[
-        "cycles"
-        ].preferences.compute_device_type = "CUDA" # or "OPENCL"
 
+        if self.gpu_in_use:
+            self.Scene.cycles.device = 'GPU'
+            self.Scene.cycles.samples = 512# 降低采样数可提升性能，但不要低于128
+            bpy.context.preferences.addons[
+            "cycles"
+            ].preferences.compute_device_type = "CUDA" # or "OPENCL"
+        
+        
         if not os.path.exists('log/render_log/current_id.txt'):
             current_id = 0
         else:
@@ -422,9 +419,10 @@ class Render():
                     current_name = glb_names[Index + current_id].split('.')[0]
                     dir_tobe_deleted = os.path.join(self.save_dir, current_name)
                     if os.path.exists(dir_tobe_deleted):
+                        import shutil
                         shutil.rmtree(dir_tobe_deleted)
                     exit()
-                except:
+                except Exception as e:
                     # 打开文件以写入模式
                     with open('log/render_log/excepts.txt', 'a') as file:
                         # 将整数转换为字符串并写入文件
@@ -432,3 +430,29 @@ class Render():
                     continue
                 
                 
+
+    
+
+
+if __name__=='__main__':
+    render = Render(model_dir='D:/My Codes/Python3/BlenderPY/testmodel/test', 
+                  save_dir='D:/My Codes/Python3/BlenderPY/dogresults', 
+                  angle_list=[(-pi/3,pi/3),
+                        (pi/6,pi/3),
+                        (2*pi/3,pi/3),
+                        (7*pi/6,pi/3),
+                        (-pi/6,pi/2),
+                        (pi/3,pi/2),
+                        (5*pi/6,pi/2),
+                        (4*pi/3,pi/2),], cam_lens=35,cam_sensor_width=32)
+    render.renderAll()
+##394行可以更换渲染模式，若一种过慢就换
+
+# name: view_0 distance= 1.2000000307119145       theta= 60.00000281832396        phi 300.00000141476715
+# name: view_1 distance= 1.200000056521486        theta= 60.00000352980198        phi 30.000004260679024
+# name: view_2 distance= 1.2000000943093188       theta= 60.00000457147794        phi 119.99999528267938
+# name: view_3 distance= 1.200000068499754        theta= 60.00000386000017        phi 209.99999243676734
+# name: view_4 distance= 1.2000000692034751       theta= 90.00000250447802        phi 330.00000387939923
+# name: view_5 distance= 1.2000000255698469       theta= 90.00000250447812        phi 59.99999610422294
+# name: view_6 distance= 1.2000000394011574       theta= 90.00000250447809        phi 150.00000634403145
+# name: view_7 distance= 1.2000001149768345       theta= 90.00000250447793        phi 239.99998871032727

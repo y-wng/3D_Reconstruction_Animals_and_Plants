@@ -1,7 +1,11 @@
 import os
 import shutil
+import json
 
 def check_and_move_folders(root_folder):
+    json_fil_path = './wangyi_522030910147/filtrated_data/data_description.json'
+    with open(json_fil_path, 'r') as file:
+        json_fil = json.load(file)
     for folder_name in os.listdir(root_folder):
         folder_path = os.path.join(root_folder, folder_name)
         output_file = os.path.join(folder_path, 'output.txt')
@@ -16,10 +20,13 @@ def check_and_move_folders(root_folder):
                     # shutil.rmtree('./wangyi_522030910147/rendered_data/'+folder_name)
                     with open('./log/filtrate_log/not_pa.txt', 'a') as f_1:
                         f_1.write(folder_name+'\n')
+                    del json_fil[folder_name]
                 else:
                     species = extract_species(content)  # 提取species
                     f.close()
                     move_folder(folder_name, species)  # 移动文件夹
+    with open(json_fil_path, 'w') as file:
+        json.dump(json_fil, file, indent=2)
 
 
 def extract_species(content):

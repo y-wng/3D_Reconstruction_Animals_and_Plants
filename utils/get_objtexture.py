@@ -72,7 +72,6 @@ class GLB2OBJ:
                 if not os.path.exists(os.path.join(self.save_dir,fileID)):
                     os.makedirs(name=os.path.join(self.save_dir,fileID))  
                 
-                shutil.copy(self.model_dir+'/'+fileID+'.txt', os.path.join(self.save_dir,fileID))
 
                 with self.stdout_redirected():
                     ops.export_scene.obj(filepath=os.path.join(self.save_dir,fileID,fileID+'.obj'),

@@ -1,5 +1,5 @@
 # Tutorial
-将下载好的`*.glb`文件存入文件夹`/glb_data`，依次运行`render_all.py`,`glb2obj.py`,`pa_classifier.py`(需下载预训练模型)，即可将结果全部存入`./wangyi_522030910147`内。其中前两个脚本运行过程中自动保存处理进度，如一次性处理不完可以从终端打断。
+按照[腾讯文档](https://docs.qq.com/sheet/DTEVqVFZncXh3RnNk)从[这里](https://jbox.sjtu.edu.cn/l/H108iu)下载数据，将解压后的文件存入文件夹`/glb_data`，依次运行`render_all.py`,`glb2obj.py`,`pa_classifier.py`(需下载[预训练模型](https://jbox.sjtu.edu.cn/l/813FBi),下载后存入`./pa_classifier`目录下)，即可将结果全部存入`./wangyi_522030910147`内。其中前两个脚本运行过程中自动保存处理进度，如一次性处理不完可以从终端打断。处理好后的数据压缩并在文件名后加上`_folder*_data*`（按照实际情况填写），上传到个人交大云盘上（新建一个专门用于存放处理后数据的文件夹，命名任意）。
 
 # Tutorial : Scrapy
 
@@ -61,6 +61,9 @@ pip install -r requirements.txt
 
 ## 性能设置
 若设备拥有独立显卡，对于Windows11系统，请在 `设置->系统->屏幕->显示卡->应用的自定义选项`界面，根据所使用的Python路径（注意区分虚拟环境与base环境），将`python.exe`设置为 “高性能”。
+
+## GPU设置
+请在`render_all.py`第67行设置是否启用GPU
 
 ## 摄像头距离的调整
 由于模型尺度不一，渲染过程使用了`auto_dist`函数来自动调整摄像头到模型中心的距离，若需手动控制距离或者获得相关距离信息，请修改256行处的`auto_dist(target)`为长度(米)或为其添加输出。
