@@ -1,9 +1,7 @@
-from numpy.linalg import norm
 import bpy
 import bpy.ops as ops
 import shutil
 import sys
-from math import pi,sin,cos,tan,sqrt
 import os
 from contextlib import contextmanager
 
@@ -44,6 +42,7 @@ class GLB2OBJ:
                                                 # CLOEXEC may be different
     def process(self):
         
+        ops.object.mode_set(mode='OBJECT')
         ops.object.select_all(action='SELECT')
         ops.object.delete()
 
@@ -60,6 +59,10 @@ class GLB2OBJ:
             raise Exception('No \'.glb\' file is found')
         num_names=len(glb_names) - current_id
         for Index in range(num_names):
+            
+            
+            
+            
             try:
                 fileID=glb_names[Index + current_id].split('.')[0]
                 with self.stdout_redirected():
@@ -84,8 +87,7 @@ class GLB2OBJ:
                                 
                 print(Index+1,'/',num_names,'  name :',fileID)
                 
-                ops.object.select_all(action='SELECT')
-                ops.object.delete()
+                
             except KeyboardInterrupt:
                     with open('log/glb2mesh_log/current_id.txt', 'w') as file:
                         # 将整数转换为字符串并写入文件
@@ -100,5 +102,11 @@ class GLB2OBJ:
                 with open('log/glb2mesh_log/excepts.txt', 'a') as file:
                     # 将整数转换为字符串并写入文件
                     file.write(str(Index + current_id) + '\n')
+                ops.object.mode_set(mode='OBJECT')
+                ops.object.select_all(action='SELECT')
+                ops.object.delete()
                 continue
-        
+            ops.object.mode_set(mode='OBJECT')
+            ops.object.select_all(action='SELECT')
+            ops.object.delete()
+
