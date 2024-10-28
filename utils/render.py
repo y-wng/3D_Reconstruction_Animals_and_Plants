@@ -396,9 +396,10 @@ class Render():
 
 
         
-        # self.Scene.render.engine = self.Engines[2]#光线追踪引擎
+        
 
         if self.gpu_in_use:
+            self.Scene.render.engine = self.Engines[2]#光线追踪引擎
             self.Scene.cycles.device = 'GPU'
             self.Scene.cycles.samples = 512# 降低采样数可提升性能，但不要低于128
             bpy.context.preferences.addons[
