@@ -3,3 +3,6 @@
 *.png
 *.txt
 !.gitkeep
+*.json
+*.mtl
+*.obj

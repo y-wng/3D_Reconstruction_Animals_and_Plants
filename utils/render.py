@@ -9,14 +9,14 @@ from contextlib import contextmanager
 
 
 class Render():
-    def __init__(self, model_dir, save_dir, angle_list=[(pi/4.,pi/6),
-                        (3*pi/4.,pi/6),
-                        (5*pi/4.,pi/6),
-                        (7*pi/4.,pi/6),
-                        (pi/4.,0),
-                        (3*pi/4.,0),
-                        (5*pi/4.,0),
-                        (7*pi/4.,0),], gpu_in_use=False, cam_lens=35,cam_sensor_width=32):
+    def __init__(self, model_dir, save_dir, angle_list=[(-pi/3,pi/3),
+                        (pi/6,pi/3),
+                        (2*pi/3,pi/3),
+                        (7*pi/6,pi/3),
+                        (-pi/6,pi/2),
+                        (pi/3,pi/2),
+                        (5*pi/6,pi/2),
+                        (4*pi/3,pi/2),], gpu_in_use=False, cam_lens=35,cam_sensor_width=32):
         self.gpu_in_use = gpu_in_use
         self.model_dir = model_dir
         self.save_dir = save_dir
