@@ -5,6 +5,7 @@ import sys
 from math import pi,sin,cos,tan,sqrt
 import os
 import io
+import gc
 from contextlib import contextmanager
 
 
@@ -251,6 +252,12 @@ class Render():
         
         for o in self.Objects:
             if o.type=='MESH':
+                bpy.context.view_layer.objects.active=o
+                if o.data.shape_keys is not None:
+                    blocks = o.data.shape_keys.key_blocks
+                    for ind in reversed(range(len(blocks))):
+                        o.active_shape_key_index = ind
+                        ops.object.shape_key_remove()
                 target=o
                 break
             
@@ -375,6 +382,7 @@ class Render():
                     bpy.ops.render.render( write_still=True )
                 
     def renderAll(self, multiprocess=False):
+        gc.enable()
         
         #settings
         self.Scene.render.resolution_x = 256            
@@ -390,9 +398,10 @@ class Render():
 
 
         
-        # self.Scene.render.engine = self.Engines[2]#光线追踪引擎
+        
 
         if self.gpu_in_use:
+            self.Scene.render.engine = self.Engines[2]#光线追踪引擎
             self.Scene.cycles.device = 'GPU'
             self.Scene.cycles.samples = 512# 降低采样数可提升性能，但不要低于128
             bpy.context.preferences.addons[
