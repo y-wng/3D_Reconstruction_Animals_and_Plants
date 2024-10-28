@@ -251,6 +251,12 @@ class Render():
         
         for o in self.Objects:
             if o.type=='MESH':
+                bpy.context.view_layer.objects.active=o
+                if o.data.shape_keys is not None:
+                    blocks = o.data.shape_keys.key_blocks
+                    for ind in reversed(range(len(blocks))):
+                        o.active_shape_key_index = ind
+                        ops.object.shape_key_remove()
                 target=o
                 break
             
