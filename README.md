@@ -1,6 +1,8 @@
 # Tutorial
 按照[腾讯文档](https://docs.qq.com/sheet/DTEVqVFZncXh3RnNk)从[这里](https://jbox.sjtu.edu.cn/l/H108iu)下载数据，将解压后的文件存入文件夹`/glb_data`，依次运行`render_all.py`,`glb2obj.py`,`pa_classifier.py`(需下载[预训练模型](https://jbox.sjtu.edu.cn/l/813FBi),下载后存入`./pa_classifier`目录下)，即可将结果全部存入`./wangyi_522030910147`内。其中前两个脚本运行过程中自动保存处理进度，如一次性处理不完可以从终端打断。处理好后的数据压缩并在文件名后加上`_folder*_data*_part*`（按照实际情况填写，如果分开上传则加上part部分），上传到个人交大云盘上（新建一个专门用于存放处理后数据的文件夹，命名任意）。
 
+Ps:`clear_all.py`可以将目录结构恢复至初始状态。
+
 # Tutorial : Scrapy
 
 ## Requirements
