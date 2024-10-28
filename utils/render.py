@@ -423,7 +423,7 @@ class Render():
             raise Exception('No \'.glb\' file is found')
         if not multiprocess:
             num_names=len(glb_names) - current_id
-            for Index in range(num_names - current_id):
+            for Index in range(num_names):
                 try:
                     self.list_render(anglelist=self.angle_list,
                             filepath=os.path.join(self.model_dir,glb_names[Index + current_id]),

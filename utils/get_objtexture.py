@@ -59,10 +59,6 @@ class GLB2OBJ:
             raise Exception('No \'.glb\' file is found')
         num_names=len(glb_names) - current_id
         for Index in range(num_names):
-            
-            
-            
-            
             try:
                 fileID=glb_names[Index + current_id].split('.')[0]
                 with self.stdout_redirected():
