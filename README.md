@@ -62,11 +62,8 @@ pip install -r requirements.txt
 ## 性能设置
 若设备拥有独立显卡，对于Windows11系统，请在 `设置->系统->屏幕->显示卡->应用的自定义选项`界面，根据所使用的Python路径（注意区分虚拟环境与base环境），将`python.exe`设置为 “高性能”。
 
-## GPU设置
-请在`render_all.py`第67行设置是否启用GPU
-
-## 摄像头距离的调整
-由于模型尺度不一，渲染过程使用了`auto_dist`函数来自动调整摄像头到模型中心的距离，若需手动控制距离或者获得相关距离信息，请修改256行处的`auto_dist(target)`为长度(米)或为其添加输出。
+## 引擎设置
+渲染参数gpu_in_use若为True，则使用光线追踪引擎，速度较慢，一般请勿启用。
 
 # Tutorial : pa-classifier
 
