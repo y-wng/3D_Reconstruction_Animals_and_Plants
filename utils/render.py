@@ -5,6 +5,7 @@ import sys
 from math import pi,sin,cos,tan,sqrt
 import os
 import io
+import gc
 from contextlib import contextmanager
 
 
@@ -381,6 +382,7 @@ class Render():
                     bpy.ops.render.render( write_still=True )
                 
     def renderAll(self, multiprocess=False):
+        gc.enable()
         
         #settings
         self.Scene.render.resolution_x = 256            
