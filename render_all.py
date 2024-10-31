@@ -42,7 +42,6 @@ def parse_txt_file(file_path):
 
 def process_folder(folder_path, output_json_path):
     data = {}
-
     for root, dirs, files in os.walk(folder_path):
         for file in files:
             if file.endswith(".txt"):
@@ -51,7 +50,8 @@ def process_folder(folder_path, output_json_path):
                 if k:
                     data[k] = v
                 os.remove(file_path)
-
+    if not data:
+        return 
     with open(output_json_path, "a", encoding="utf-8") as json_file:
         json.dump(data, json_file, indent=4)
 
