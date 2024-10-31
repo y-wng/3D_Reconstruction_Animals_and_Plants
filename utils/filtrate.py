@@ -27,7 +27,7 @@ def check_and_move_folders(root_folder):
                     f.close()
                     move_folder(folder_name, species)  # 移动文件夹
     with open(json_fil_path, 'w') as file:
-        json.dump(json_fil, file, indent=2)
+        json.dump(json_fil, file, indent=4)
 
 
 def extract_species(content):

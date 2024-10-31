@@ -50,9 +50,11 @@ def process_folder(folder_path, output_json_path):
                 if k:
                     data[k] = v
                 os.remove(file_path)
-    if not data:
-        return 
-    with open(output_json_path, "a", encoding="utf-8") as json_file:
+    if os.path.exists(output_json_path):
+        with open(output_json_path, 'r') as file:
+            json_fil = json.load(file)
+        data.update(json_fil)
+    with open(output_json_path, "w", encoding="utf-8") as json_file:
         json.dump(data, json_file, indent=4)
 
 
@@ -63,8 +65,8 @@ if __name__ == "__main__":
     output_json_path = "./glb_data/data_description.json"
     process_folder(folder_path, output_json_path)
     
-    dir_name = os.path.dirname(os.path.abspath(__file__))
+    # dir_name = os.path.dirname(os.path.abspath(__file__))
 
-    renderer = Render(model_dir=dir_name + '/glb_data', save_dir=dir_name + '/wangyi_522030910147/rendered_data'
-                      ,gpu_in_use=False)
-    renderer.renderAll()
+    # renderer = Render(model_dir=dir_name + '/glb_data', save_dir=dir_name + '/wangyi_522030910147/rendered_data'
+    #                   ,gpu_in_use=False)
+    # renderer.renderAll()
