@@ -20,7 +20,8 @@ def check_and_move_folders(root_folder):
                     # shutil.rmtree('./wangyi_522030910147/rendered_data/'+folder_name)
                     with open('./log/filtrate_log/not_pa.txt', 'a') as f_1:
                         f_1.write(folder_name+'\n')
-                    del json_fil[folder_name]
+                    if folder_name in json_fil:
+                        del json_fil[folder_name]
                 else:
                     species = extract_species(content)  # 提取species
                     f.close()
