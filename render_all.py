@@ -65,8 +65,8 @@ if __name__ == "__main__":
     output_json_path = "./glb_data/data_description.json"
     process_folder(folder_path, output_json_path)
     
-    # dir_name = os.path.dirname(os.path.abspath(__file__))
+    dir_name = os.path.dirname(os.path.abspath(__file__))
 
-    # renderer = Render(model_dir=dir_name + '/glb_data', save_dir=dir_name + '/wangyi_522030910147/rendered_data'
-    #                   ,gpu_in_use=False)
-    # renderer.renderAll()
+    renderer = Render(model_dir=dir_name + '/glb_data', save_dir=dir_name + '/wangyi_522030910147/rendered_data'
+                      ,gpu_in_use=False)
+    renderer.renderAll()
