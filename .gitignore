@@ -1,7 +1,6 @@
 *.tar
 *.glb
 *.png
-*.txt
 !.gitkeep
 *.json
 *.mtl
